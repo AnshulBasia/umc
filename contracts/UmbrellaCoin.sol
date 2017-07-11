@@ -15,7 +15,7 @@ contract UmbrellaCoin is StandardToken, Ownable {
 
   // Constructor
   function UmbrellaCoin() {
-      totalSupply = 100000000;
+      totalSupply = 100000000000000;
       balances[msg.sender] = totalSupply; // Send all tokens to owner
   }
 
