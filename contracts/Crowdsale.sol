@@ -22,15 +22,15 @@ contract Crowdsale is Pausable, PullPayment {
 	* Constants
 	*/
 	/* Minimum number of UmbrellaCoin to sell */
-	uint public constant MIN_CAP = 30000000000000; // 30,000,000 UmbrellaCoins
+	uint public constant MIN_CAP = 3000000000000; // 3,000,000 UmbrellaCoins
 	/* Maximum number of UmbrellaCoin to sell */
-	uint public constant MAX_CAP = 600000000000000; // 600,000,000 UmbrellaCoins
+	uint public constant MAX_CAP = 60000000000000; // 60,000,000 UmbrellaCoins
 	/* Minimum amount to invest */
 	uint public constant MIN_INVEST_ETHER = 100 finney;
 	/* Crowdsale period */
 	uint private constant CROWDSALE_PERIOD = 30 days;
 	/* Number of UmbrellaCoins per Ether */
-	uint public constant COIN_PER_ETHER = 6000000000; // 6,000 UmbrellaCoins
+	uint public constant COIN_PER_ETHER = 600000000; // 600 UmbrellaCoins
 
 
 	/*
