@@ -1,6 +1,6 @@
 # UmbrellaCoin
 
-Universal Cryptocurrency based on Ethereum for paying insurance deductibles
+Universal Cryptocurrency based on Ethereum for paying registered schedule of benefits
 
 ## Requirements
 
