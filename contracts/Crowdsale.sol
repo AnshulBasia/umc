@@ -24,7 +24,7 @@ contract Crowdsale is Pausable, PullPayment {
 	/* Minimum number of UmbrellaCoin to sell */
 	uint public constant MIN_CAP = 3000000000000; // 3,000,000 UmbrellaCoins
 	/* Maximum number of UmbrellaCoin to sell */
-	uint public constant MAX_CAP = 60000000000000; // 60,000,000 UmbrellaCoins
+	uint public constant MAX_CAP = 70000000000000; // 70,000,000 UmbrellaCoins
 	/* Minimum amount to invest */
 	uint public constant MIN_INVEST_ETHER = 100 finney;
 	/* Crowdsale period */
@@ -148,8 +148,8 @@ contract Crowdsale is Pausable, PullPayment {
 		if (!multisigEther.send(this.balance)) throw; // Move the remaining Ether to the multisig address
 		
 		uint remains = coin.balanceOf(this);
-		if (remains > 0) { // Burn the rest of UmbrellaCoins
-			if (!coin.burn(remains)) throw ;
+		if (remains > 0) { // Convert the rest of UmbrellaCoins to float
+			if (!coin.float(remains)) throw ;
 		}
 		crowdsaleClosed = true;
 	}
@@ -210,7 +210,7 @@ contract Crowdsale is Pausable, PullPayment {
 
 		coin.transferFrom(msg.sender, address(this), _value); // get the token back to the crowdsale contract
 
-		if (!coin.burn(_value)) throw ; // token sent for refund are burnt
+		if (!coin.float(_value)) throw ; // token sent for refund are stored as float
 
 		uint ETHToSend = backers[msg.sender].weiReceived;
 		backers[msg.sender].weiReceived=0;

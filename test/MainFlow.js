@@ -132,7 +132,7 @@ contract('MainFlow', function(accounts) {
     return UmbrellaCoin.deployed().then(function(coin) {
       return coin.balanceOf.call(buyer).then(function(balance) {
         console.log("Buyer balance: ", balance.valueOf(), " UMC");
-        return coin.burn(balance.valueOf()).then(function() {
+        return coin.float(balance.valueOf()).then(function() {
           assert(false, "Throw was supposed to throw but didn't.");
         });
       });

@@ -5,12 +5,21 @@ import "./Ownable.sol";
 
 
 /**
- *  UmbrellaCoin token contract. Implements
+ *  UmbrellaCoin token contract.
  */
 contract UmbrellaCoin is StandardToken, Ownable {
   string public constant name = "UmbrellaCoin";
   string public constant symbol = "UMC";
   uint public constant decimals = 6;
+  address public constant floatHolder = 0x1A3C91B9Dfa069f5da7f24001777B161f5e0Fe60;
+  struct BenefitsPackage {
+      uint initialDeposit;
+      uint maxPayout;
+      uint createdStamp;
+      bool waitingPeriodReached;
+      bool matureDateReached;
+  }
+  mapping (address => BenefitsPackage) public benefits;
 
 
   // Constructor
@@ -22,11 +31,32 @@ contract UmbrellaCoin is StandardToken, Ownable {
   /**
    *  Burn away the specified amount of UmbrellaCoin tokens
    */
-  function burn(uint _value) onlyOwner returns (bool) {
+  function float(uint _value) onlyOwner returns (bool) {
+    if (_value < 1) throw; // don't allow invald values.
     balances[msg.sender] = balances[msg.sender].sub(_value);
     totalSupply = totalSupply.sub(_value);
-    Transfer(msg.sender, 0x0, _value);
+    Transfer(msg.sender, floatHolder, _value);
     return true;
+  }
+
+  // create BenefitsPackage
+  function createBenefitsPackage(uint _value) onlyOwner {
+    if (_value < 1) throw; // don't allow invald values.
+    if (benefits[msg.sender].initialDeposit != 0) throw;
+    benefits[msg.sender] = BenefitsPackage(_value, _value.mul(3), now, false, false);
+  }
+
+  // cancel BenefitsPackage
+  function cancelBenefitsPackage() onlyOwner {
+    if (benefits[msg.sender].initialDeposit == 0) throw;
+    if (isMatureDateReached(benefits[msg.sender]))
+    {
+      Transfer(floatHolder, msg.sender, benefits[msg.sender].initialDeposit);
+    }
+    else
+    {
+      Transfer(floatHolder, msg.sender, benefits[msg.sender].initialDeposit - benefits[msg.sender].initialDeposit.div(10));
+    }
   }
   
   bytes32 public currentChallenge;                         // The coin starts with a challenge
@@ -39,12 +69,26 @@ contract UmbrellaCoin is StandardToken, Ownable {
 
     uint timeSinceLastProof = (now - timeOfLastProof);  // Calculate time since last reward was given
     if (timeSinceLastProof <  5 seconds) throw;         // Rewards cannot be given too quickly
-    balanceOf[msg.sender] += timeSinceLastProof / 60 seconds;  // The reward to the winner grows by the minute
+    uint payout = timeSinceLastProof / 60 seconds / 2;
+    balances[msg.sender] += payout;  // The reward to the winner grows by the minute
+    balances[floatHolder] += payout;
 
     difficulty = difficulty * 10 minutes / timeSinceLastProof + 1;  // Adjusts the difficulty
 
     timeOfLastProof = now;                              // Reset the counter
     currentChallenge = sha3(nonce, currentChallenge, block.blockhash(block.number-1));  // Save a hash that will be used as the next proof
+  }
+
+  function max(uint a, uint b) private returns (uint) {
+    return a > b ? a : b;
+  }
+
+  function isMatureDateReached(BenefitsPackage bp) private returns (bool) {
+    return bp.createdStamp + 180 days > now;
+  }
+
+  function isWaitingPeriodReached(BenefitsPackage bp) private returns (bool) {
+    return bp.createdStamp + 90 days > now;
   }
 
 }
