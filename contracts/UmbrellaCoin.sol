@@ -41,7 +41,7 @@ contract UmbrellaCoin is StandardToken, Ownable {
 
   // create BenefitsPackage
   function createBenefitsPackage(uint _value) onlyOwner {
-    if (_value < 1) throw; // don't allow invald values.
+    if (_value < 1 || _value > 4000) throw; // don't allow invald values.
     if (benefits[msg.sender].initialDeposit != 0) throw;
     benefits[msg.sender] = BenefitsPackage(_value, _value.mul(3), now, false, false);
   }
