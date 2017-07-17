@@ -2,24 +2,8 @@ pragma solidity ^0.4.2;
 /* The token is used as a voting shares */
 contract token { mapping (address => uint256) public balanceOf;  }
 
-
-/* define 'owned' */
-contract owned {
-    address public owner;
-
-    function owned() {
-        owner = msg.sender;
-    }
-
-    modifier onlyOwner {
-        if (msg.sender != owner) throw;
-        _;
-    }
-
-    function transferOwnership(address newOwner) onlyOwner {
-        owner = newOwner;
-    }
-}
+import "./UmbrellaCoin.sol";
+import "./Ownable.sol";
 
 contract tokenRecipient { 
     event receivedEther(address sender, uint amount);
@@ -41,7 +25,7 @@ contract Token {
 }
 
 /* The democracy contract itself */
-contract Association is owned, tokenRecipient {
+contract Association is Ownable, tokenRecipient {
 
     /* Contract Variables and events */
     uint public minimumQuorum;

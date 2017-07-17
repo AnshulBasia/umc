@@ -20,12 +20,16 @@ contract UmbrellaCoin is StandardToken, Ownable {
       bool matureDateReached;
   }
   mapping (address => BenefitsPackage) public benefits;
+  bytes32 public currentChallenge;                         // The coin starts with a challenge
+  uint public timeOfLastProof;                             // Variable to keep track of when rewards were given
+  uint public difficulty = 10**32;                         // Difficulty starts reasonably low
 
 
   // Constructor
   function UmbrellaCoin() {
       totalSupply = 100000000000000;
       balances[msg.sender] = totalSupply; // Send all tokens to owner
+      timeOfLastProof = now;
   }
 
   /**
@@ -58,10 +62,6 @@ contract UmbrellaCoin is StandardToken, Ownable {
       Transfer(floatHolder, msg.sender, benefits[msg.sender].initialDeposit - benefits[msg.sender].initialDeposit.div(10));
     }
   }
-  
-  bytes32 public currentChallenge;                         // The coin starts with a challenge
-  uint public timeOfLastProof;                             // Variable to keep track of when rewards were given
-  uint public difficulty = 10**32;                         // Difficulty starts reasonably low
 
   function proofOfWork(uint nonce){
     bytes8 n = bytes8(sha3(nonce, currentChallenge));    // Generate a random hash based on input
