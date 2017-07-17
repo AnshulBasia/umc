@@ -20,16 +20,11 @@ contract UmbrellaCoin is StandardToken, Ownable {
       bool matureDateReached;
   }
   mapping (address => BenefitsPackage) public benefits;
-  bytes32 public currentChallenge;                         // The coin starts with a challenge
-  uint public timeOfLastProof;                             // Variable to keep track of when rewards were given
-  uint public difficulty = 10**32;                         // Difficulty starts reasonably low
-
 
   // Constructor
   function UmbrellaCoin() {
       totalSupply = 100000000000000;
       balances[msg.sender] = totalSupply; // Send all tokens to owner
-      timeOfLastProof = now;
   }
 
   /**
@@ -61,22 +56,6 @@ contract UmbrellaCoin is StandardToken, Ownable {
     {
       Transfer(floatHolder, msg.sender, benefits[msg.sender].initialDeposit - benefits[msg.sender].initialDeposit.div(10));
     }
-  }
-
-  function proofOfWork(uint nonce){
-    bytes8 n = bytes8(sha3(nonce, currentChallenge));    // Generate a random hash based on input
-    if (n < bytes8(difficulty)) throw;                   // Check if it's under the difficulty
-
-    uint timeSinceLastProof = (now - timeOfLastProof);  // Calculate time since last reward was given
-    if (timeSinceLastProof <  5 seconds) throw;         // Rewards cannot be given too quickly
-    uint payout = timeSinceLastProof / 60 seconds / 2;
-    balances[msg.sender] += payout;  // The reward to the winner grows by the minute
-    balances[floatHolder] += payout;
-
-    difficulty = difficulty * 10 minutes / timeSinceLastProof + 1;  // Adjusts the difficulty
-
-    timeOfLastProof = now;                              // Reset the counter
-    currentChallenge = sha3(nonce, currentChallenge, block.blockhash(block.number-1));  // Save a hash that will be used as the next proof
   }
 
   function max(uint a, uint b) private returns (uint) {
