@@ -14,7 +14,7 @@ To run tests you need to install the following software:
 To run test open the terminal and run the following commands:
 
 ```sh
-$ cd smart-contract
+$ cd umc
 $ truffle migrate
 $ truffle test ./test/MainFlow.js
 $ truffle test ./test/RefundFlow.js
@@ -28,7 +28,7 @@ $ truffle test ./test/RefundFlow.js
 To deploy smart contracts to live network do the following steps:
 1. Go to the smart contract folder and run truffle console:
 ```sh
-$ cd smart-contract
+$ cd umc
 $ truffle console
 ```
 2. Inside truffle console invoke "migrate" command to deploy contracts:
