@@ -18,7 +18,7 @@ $ cd umc
 $ truffle migrate
 $ truffle test ./test/MainFlow.js
 $ truffle test ./test/RefundFlow.js
-$ truffle test ./test/RefundFlow.js
+$ truffle test ./test/FastFlow.js
 ```
 
 **NOTE:** All tests must be run separately as specified
