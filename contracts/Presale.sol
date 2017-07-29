@@ -6,10 +6,10 @@ import "./PullPayment.sol";
 import "./UmbrellaCoin.sol";
 
 /*
-  Crowdsale Smart Contract for the UMC project
+  Presale Smart Contract for the UMC project
   This smart contract collects ETH, and in return emits UmbrellaCoin tokens to the backers
 */
-contract Crowdsale is Pausable, PullPayment {
+contract Presale is Pausable, PullPayment {
     
     using SafeMath for uint;
 
@@ -27,8 +27,8 @@ contract Crowdsale is Pausable, PullPayment {
 	uint public constant MAX_CAP = 70000000000000; // 70,000,000 UmbrellaCoins
 	/* Minimum amount to invest */
 	uint public constant MIN_INVEST_ETHER = 100 finney;
-	/* Crowdsale period */
-	uint private constant CROWDSALE_PERIOD = 30 days;
+	/* Presale period */
+	uint private constant Presale_PERIOD = 30 days;
 	/* Number of UmbrellaCoins per Ether */
 	uint public constant COIN_PER_ETHER = 600000000; // 600 UmbrellaCoins
 
@@ -44,12 +44,12 @@ contract Crowdsale is Pausable, PullPayment {
 	uint public etherReceived;
 	/* Number of UmbrellaCoins sent to Ether contributors */
 	uint public coinSentToEther;
-	/* Crowdsale start time */
+	/* Presale start time */
 	uint public startTime;
-	/* Crowdsale end time */
+	/* Presale end time */
 	uint public endTime;
- 	/* Is crowdsale still on going */
-	bool public crowdsaleClosed;
+ 	/* Is Presale still on going */
+	bool public PresaleClosed;
 
 	/* Backers Ether indexed by their Ethereum address */
 	mapping(address => Backer) public backers;
@@ -77,7 +77,7 @@ contract Crowdsale is Pausable, PullPayment {
 	/*
 	 * Constructor
 	*/
-	function Crowdsale(address _umbrellaCoinAddress, address _to) {
+	function Presale(address _umbrellaCoinAddress, address _to) {
 		coin = UmbrellaCoin(_umbrellaCoinAddress);
 		multisigEther = _to;
 	}
@@ -90,13 +90,13 @@ contract Crowdsale is Pausable, PullPayment {
 	}
 
 	/* 
-	 * To call to start the crowdsale
+	 * To call to start the Presale
 	 */
 	function start() onlyOwner {
-		if (startTime != 0) throw; // Crowdsale was already started
+		if (startTime != 0) throw; // Presale was already started
 
 		startTime = now ;            
-		endTime =  now + CROWDSALE_PERIOD;    
+		endTime =  now + Presale_PERIOD;    
 	}
 
 	/*
@@ -127,15 +127,16 @@ contract Crowdsale is Pausable, PullPayment {
 	 *Compute the UmbrellaCoin bonus according to the investment period
 	 */
 	function bonus(uint amount) internal constant returns (uint) {
+		if (now < startTime.add(2 days)) return amount.add(amount.div(3));   // bonus 33.3%
 		return amount;
 	}
 
 	/*	
-	 * Finalize the crowdsale, should be called after the refund period
+	 * Finalize the Presale, should be called after the refund period
 	*/
 	function finalize() onlyOwner public {
 
-		if (now < endTime) { // Cannot finalise before CROWDSALE_PERIOD or before selling all coins
+		if (now < endTime) { // Cannot finalise before Presale_PERIOD or before selling all coins
 			if (coinSentToEther == MAX_CAP) {
 			} else {
 				throw;
@@ -150,7 +151,7 @@ contract Crowdsale is Pausable, PullPayment {
 		if (remains > 0) { // Convert the rest of UmbrellaCoins to float
 			if (!coin.float(remains)) throw ;
 		}
-		crowdsaleClosed = true;
+		PresaleClosed = true;
 	}
 
 	/*	
@@ -200,14 +201,14 @@ contract Crowdsale is Pausable, PullPayment {
 	/* 
   	 * When MIN_CAP is not reach:
   	 * 1) backer call the "approve" function of the UmbrellaCoin token contract with the amount of all UmbrellaCoins they got in order to be refund
-  	 * 2) backer call the "refund" function of the Crowdsale contract with the same amount of UmbrellaCoins
-   	 * 3) backer call the "withdrawPayments" function of the Crowdsale contract to get a refund in ETH
+  	 * 2) backer call the "refund" function of the Presale contract with the same amount of UmbrellaCoins
+   	 * 3) backer call the "withdrawPayments" function of the Presale contract to get a refund in ETH
    	 */
 	function refund(uint _value) minCapNotReached public {
 		
 		if (_value != backers[msg.sender].coinSent) throw; // compare value from backer balance
 
-		coin.transferFrom(msg.sender, address(this), _value); // get the token back to the crowdsale contract
+		coin.transferFrom(msg.sender, address(this), _value); // get the token back to the Presale contract
 
 		if (!coin.float(_value)) throw ; // token sent for refund are stored as float
 
