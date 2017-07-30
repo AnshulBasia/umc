@@ -1,13 +1,12 @@
 var UmbrellaCoin = artifacts.require("./UmbrellaCoin.sol");
 var Crowdsale = artifacts.require("./Crowdsale.sol");
 
-var TOTAL_COINS = 1000000000000000;
-var CROWDSALE_CAP = 600000000000000;
+var TOTAL_COINS = 100000000000000;
+var CROWDSALE_CAP = 70000000000000;
 var PERIOD_28_DAYS = 28*24*60*60;
-var PERIOD_2_DAYS = 2*24*60*60;
-var SEND_ETHER =  10000;
-var UMC_PER_ETHER = 6000000000;
-var RECEIVE_UMC_AMOUNT = SEND_ETHER * UMC_PER_ETHER + ((SEND_ETHER * UMC_PER_ETHER) / 5); // + 20% bonus
+var UMC_PER_ETHER = 600000000;
+var SEND_ETHER =  TOTAL_COINS/ UMC_PER_ETHER;
+var RECEIVE_UMC_AMOUNT = SEND_ETHER * UMC_PER_ETHER;
 
 contract('MainFlow', function(accounts) {
 
@@ -27,22 +26,22 @@ contract('MainFlow', function(accounts) {
   }
 
 
-  it("should put 1,000,000,000.000000 UmbrellaCoin in the owner account", function() {
+  it("should put 100,000,000.000000 UmbrellaCoin in the owner account", function() {
     return UmbrellaCoin.deployed().then(function(instance) {
       return instance.balanceOf.call(owner);
     }).then(function(balance) {
-      assert.equal(balance.valueOf(), TOTAL_COINS, "1,000,000,000.000000 wasn't in the owner account");
+      assert.equal(balance.valueOf(), TOTAL_COINS, "100,000,000.000000 wasn't in the owner account");
     });
   });
 
-  it("Send 600,000,000.000000 UmbrellaCoin to Crowdsale contract", function() {
+  it("Send 70,000,000.000000 UmbrellaCoin to Crowdsale contract", function() {
     return UmbrellaCoin.deployed().then(function(coin) {
       return coin.transfer(Crowdsale.address, CROWDSALE_CAP, {from: owner}).then(function (txn) {
         return coin.balanceOf.call(Crowdsale.address);
       });
     }).then(function (balance) {
       console.log("Crowdsale balance: " + balance);
-      assert.equal(balance.valueOf(), CROWDSALE_CAP, "600,000,000.000000 wasn't in the Crowdsale account");
+      assert.equal(balance.valueOf(), CROWDSALE_CAP, "70,000,000.000000 wasn't in the Crowdsale account");
     });
   });
 
@@ -94,28 +93,26 @@ contract('MainFlow', function(accounts) {
         return Crowdsale.deployed().then(function(crowd) {
           console.log('Buyer UMC: ' + balance.valueOf());
           return coin.approveAndCall(crowd.address, balance.valueOf(), {from: buyer}).then(function() {
-            assert(false, "Throw was supposed to throw but didn't.");
+            assert(false, "Supposed to throw but didn't.");
           })
         }).catch(function(error) {
-          console.log("Throw was happened. Test succeeded.");
+          console.log("Throw happened. Test succeeded.");
         });
       });
     });
   });
 
-  it("Try to buy too more coins {from: buyer}", function() {
+  it("Try to buy two more coins {from: buyer}", function() {
     return Crowdsale.deployed().then(function(crowd) {
        return crowd.sendTransaction({from: buyer, to: crowd.address, value: web3.toWei(CROWDSALE_CAP/UMC_PER_ETHER+1, "ether")}).then(function(txn) {
-          assert(false, "Throw was supposed to throw but didn't.");
+          assert(false, "Supposed to throw but didn't.");
        })
      }).catch(function(error) {
-        console.log("Throw was happened. Test succeeded.");
+        console.log("Throw happened. Test succeeded.");
      });
   });
 
   it("Buy 6,000 coins without bonus", function() {
-    web3.evm.increaseTime(PERIOD_2_DAYS);
-
     return Crowdsale.deployed().then(function(crowd) {
        return crowd.sendTransaction({from: buyer, to: crowd.address, value: web3.toWei(1, "ether")}).then(function(txn) {
           return UmbrellaCoin.deployed().then(function(coin) {
@@ -124,7 +121,7 @@ contract('MainFlow', function(accounts) {
        })
      }).then(function(balance) {
         console.log("Buyer balance: ", balance.valueOf(), " UMC");
-        assert.equal(balance.valueOf(), RECEIVE_UMC_AMOUNT + UMC_PER_ETHER, RECEIVE_UMC_AMOUNT + UMC_PER_ETHER + " wasn't in the first account");
+        assert.equal(balance.valueOf(), UMC_PER_ETHER, UMC_PER_ETHER + " wasn't in the first account");
      });
   });
 
@@ -133,11 +130,11 @@ contract('MainFlow', function(accounts) {
       return coin.balanceOf.call(buyer).then(function(balance) {
         console.log("Buyer balance: ", balance.valueOf(), " UMC");
         return coin.float(balance.valueOf()).then(function() {
-          assert(false, "Throw was supposed to throw but didn't.");
+          assert(false, "Supposed to throw but didn't.");
         });
       });
     }).catch(function(error) {
-      console.log("Throw was happened. Test succeeded.");
+      console.log("Throw happened. Test succeeded.");
     });
   });
 
@@ -149,10 +146,10 @@ contract('MainFlow', function(accounts) {
   it("Try to buy 10,000 more coins {from: buyer}", function() {
     return Crowdsale.deployed().then(function(crowd) {
        return crowd.sendTransaction({from: buyer, to: crowd.address, value: web3.toWei(1, "ether")}).then(function(txn) {
-          assert(false, "Throw was supposed to throw but didn't.");
+          assert(false, "Supposed to throw but didn't.");
        })
      }).catch(function(error) {
-        console.log("Throw was happened. Test succeeded.");
+        console.log("Throw happened. Test succeeded.");
      });
   });
 
@@ -164,38 +161,38 @@ contract('MainFlow', function(accounts) {
     });
   });
 
-  it("Try to invoke backUMCCoinOwner {from: buyer}", function() {
+  it("Try to invoke backUmbrellaCoinOwner {from: buyer}", function() {
     return Crowdsale.deployed().then(function(crowd) {
-      return crowd.backUMCCoinOwner({from: buyer}).then(function() {
-        assert(false, "Throw was supposed to throw but didn't.");
+      return crowd.backUmbrellaCoinOwner({from: buyer}).then(function() {
+        assert(false, "Supposed to throw but didn't.");
       }).catch(function(error) {
-        console.log("Throw was happened. Test succeeded.");
+        console.log("Throw happened. Test succeeded.");
       });
     });
   });
 
-  it("Invoke backUMCCoinOwner {from: Crowdsale contract}", function() {
+  it("Invoke backUmbrellaCoinOwner {from: Crowdsale contract}", function() {
     return Crowdsale.deployed().then(function(crowd) {
-      return crowd.backUMCCoinOwner().then(function() {
+      return crowd.backUmbrellaCoinOwner().then(function() {
         return UmbrellaCoin.deployed().then(function(coin) {
           return coin.owner.call().then(function(coinOwner) {
             console.log("UmbrellaCoin owner was changed to: " + coinOwner);
-            assert.equal(coinOwner, owner, "UmbrellaCoin owner addresws must be equals to Crowdsale owner address");
+            assert.equal(coinOwner, owner, "UmbrellaCoin owner address must be equal to Crowdsale owner address");
           })              
         })
       }).catch(function(error) {
-        assert(false, "Throw was happened, but wasn't expected.");
+        assert(false, "Throw happened, but wasn't expected.");
       });
     });
   });
 
 
-  it("Invoke backUMCCoinOwner one more time {from: Crowdsale contract}", function() {
+  it("Invoke backUmbrellaCoinOwner one more time {from: Crowdsale contract}", function() {
     return Crowdsale.deployed().then(function(crowd) {
-      return crowd.backUMCCoinOwner().then(function() {
-        assert(false, "Throw was supposed to throw but didn't.");
+      return crowd.backUmbrellaCoinOwner().then(function() {
+        assert(false, "Supposed to throw but didn't.");
       }).catch(function(error) {
-        console.log("Throw was happened. Test succeeded.");
+        console.log("Throw happened. Test succeeded.");
       });
     });
   });

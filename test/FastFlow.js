@@ -1,9 +1,9 @@
 var UmbrellaCoin = artifacts.require("./UmbrellaCoin.sol");
 var Crowdsale = artifacts.require("./Crowdsale.sol");
 
-var TOTAL_COINS = 1000000000000000;
-var CROWDSALE_CAP = 600000000000000;
-var UMC_PER_ETHER = 6000000000;
+var TOTAL_COINS = 100000000000000;
+var CROWDSALE_CAP = 70000000000000;
+var UMC_PER_ETHER = 600000000;
 var PERIOD_2_DAYS = 2*24*60*60;
 
 contract('FastFlow', function(accounts) {
@@ -44,24 +44,24 @@ contract('FastFlow', function(accounts) {
 
   }
 
-  it("should put 1,000,000,000.000000 UmbrellaCoin in the owner account", function() {
+  it("should put 100,000,000.000000 UmbrellaCoin in the owner account", function() {
     return printBalance().then(function() {
       return UmbrellaCoin.deployed().then(function(instance) {
         return instance.balanceOf.call(owner);
       }).then(function(balance) {
-        assert.equal(balance.valueOf(), TOTAL_COINS, "1,000,000,000.000000 wasn't in the owner account.");
+        assert.equal(balance.valueOf(), TOTAL_COINS, "100,000,000.000000 wasn't in the owner account.");
       });
     })
   });
 
-  it("Send 600,000,000.000000 UmbrellaCoin to Crowdsale contract", function() {
+  it("Send 60,000,000.000000 UmbrellaCoin to Crowdsale contract", function() {
     return UmbrellaCoin.deployed().then(function(coin) {
       return coin.transfer(Crowdsale.address, CROWDSALE_CAP, {from: owner}).then(function (txn) {
         return coin.balanceOf.call(Crowdsale.address);
       });
     }).then(function (balance) {
       console.log("Crowdsale balance: " + balance);
-      assert.equal(balance.valueOf(), CROWDSALE_CAP, "600,000,000.000000 wasn't in the Crowdsale account");
+      assert.equal(balance.valueOf(), CROWDSALE_CAP, "60,000,000.000000 wasn't in the Crowdsale account");
     });
   });
 
@@ -74,7 +74,7 @@ contract('FastFlow', function(accounts) {
   });
 
 
-  it("Buy 5,994,000 coins", function() {
+  it("Buy 599,400 coins", function() {
     web3.evm.increaseTime(PERIOD_2_DAYS);
 
     var investSum = web3.toWei(100000, "ether") - web3.toWei(101, "finney");

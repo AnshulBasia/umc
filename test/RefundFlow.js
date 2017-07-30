@@ -1,11 +1,11 @@
 var UmbrellaCoin = artifacts.require("./UmbrellaCoin.sol");
 var Crowdsale = artifacts.require("./Crowdsale.sol");
 
-var TOTAL_COINS = 1000000000000000;
-var CROWDSALE_CAP = 600000000000000;
+var TOTAL_COINS = 100000000000000;
+var CROWDSALE_CAP = 70000000000000;
 var PERIOD_30_DAYS = 30*24*60*60;
 var PERIOD_15_DAYS = 15*24*60*60;
-var UMC_PER_ETHER = 6000000000;
+var UMC_PER_ETHER = 600000000;
 
 contract('RefundFlow', function(accounts) {
 
@@ -33,22 +33,22 @@ contract('RefundFlow', function(accounts) {
   });
 
 
-  it("should put 1,000,000,000.000000 UmbrellaCoin in the owner account", function() {
+  it("should put 100,000,000.000000 UmbrellaCoin in the owner account", function() {
     return UmbrellaCoin.deployed().then(function(instance) {
       return instance.balanceOf.call(owner);
     }).then(function(balance) {
-      assert.equal(balance.valueOf(), TOTAL_COINS, "1,000,000,000.000000 wasn't in the owner account.");
+      assert.equal(balance.valueOf(), TOTAL_COINS, "100,000,000.000000 wasn't in the owner account.");
     });
   });
 
-  it("Send 600,000,000.000000 UmbrellaCoin to Crowdsale contract", function() {
+  it("Send 70,000,000.000000 UmbrellaCoin to Crowdsale contract", function() {
     return UmbrellaCoin.deployed().then(function(coin) {
       return coin.transfer(Crowdsale.address, CROWDSALE_CAP, {from: owner}).then(function (txn) {
         return coin.balanceOf.call(Crowdsale.address);
       });
     }).then(function (balance) {
       console.log("Crowdsale balance: " + balance);
-      assert.equal(balance.valueOf(), CROWDSALE_CAP, "600,000,000.000000 wasn't in the Crowdsale account");
+      assert.equal(balance.valueOf(), CROWDSALE_CAP, "70,000,000.000000 wasn't in the Crowdsale account");
     });
   });
 
@@ -101,7 +101,7 @@ contract('RefundFlow', function(accounts) {
     });
   });
 
-  it("Try to buy 6,000,000 coins", function() {
+  it("Try to buy 600,000 coins", function() {
     return Crowdsale.deployed().then(function(crowd) {
       return crowd.sendTransaction({from: buyer, to: crowd.address, value: web3.toWei(1000, "ether")}).then(function(txn) {
         assert(false, "Throw was supposed to throw but didn't.");
@@ -131,7 +131,7 @@ contract('RefundFlow', function(accounts) {
     });
   });
 
-  it("Buy only 6,000,000 coins", function() {
+  it("Buy only 600,000 coins", function() {
     return Crowdsale.deployed().then(function(crowd) {
        return crowd.sendTransaction({from: buyer, to: crowd.address, value: web3.toWei(1000, "ether")}).then(function(txn) {
           return UmbrellaCoin.deployed().then(function(coin) {
@@ -237,22 +237,6 @@ contract('RefundFlow', function(accounts) {
       });
     });
   });
-
-  // it("Refund the payments {from: buyer}", function() {
-  //   return Crowdsale.deployed().then(function(crowd) {
-
-  //     var oldBuyerBalance = web3.eth.getBalance(buyer);
-  //     console.log("Buyer balance", web3.fromWei(oldBuyerBalance, "ether").toString(), " ETHER");
-
-  //     return crowd.withdrawPayments({from: buyer, gas: 300000, gasPrice: 0}).then(function(txn) {
-
-  //       var refund = web3.eth.getBalance(buyer) - oldBuyerBalance;
-  //       console.log("Refund: " + refund);
-  //       assert.isAbove(refund, web3.toWei(1000, "ether"));
-
-  //     });
-  //   });
-  // });
 
   it("Finalize crowdsale, after the passage of 45 days", function() {
     web3.evm.increaseTime(PERIOD_15_DAYS);
