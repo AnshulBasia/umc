@@ -4,7 +4,6 @@ var Crowdsale = artifacts.require("./Crowdsale.sol");
 var TOTAL_COINS = 100000000000000;
 var CROWDSALE_CAP = 70000000000000;
 var UMC_PER_ETHER = 600000000;
-var PERIOD_2_DAYS = 2*24*60*60;
 
 contract('FastFlow', function(accounts) {
 
@@ -75,8 +74,6 @@ contract('FastFlow', function(accounts) {
 
 
   it("Buy 599,400 coins", function() {
-    web3.evm.increaseTime(PERIOD_2_DAYS);
-
     var investSum = web3.toWei(100000, "ether") - web3.toWei(101, "finney");
     
     return Crowdsale.deployed().then(function(crowd) {

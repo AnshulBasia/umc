@@ -141,8 +141,7 @@ contract('RefundFlow', function(accounts) {
      }).then(function(balance) {
         console.log("Buyer balance: ", balance.valueOf(), " UMC");
 
-        var count = 1000*UMC_PER_ETHER + (1000*UMC_PER_ETHER*0.2);
-        assert.equal(balance.valueOf(), count, "10000 wasn't in the first account.");
+        assert.equal(balance.valueOf(), 1000*UMC_PER_ETHER, "10000 wasn't in the first account.");
      });
   });
 

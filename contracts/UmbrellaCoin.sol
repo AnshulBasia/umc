@@ -63,7 +63,7 @@ contract UmbrellaCoin is StandardToken, Ownable {
   }
 
   function isMatureDateReached(BenefitsPackage bp) private returns (bool) {
-    return bp.createdStamp + 180 days > now;
+    return bp.createdStamp + 365 days > now;
   }
 
   function isWaitingPeriodReached(BenefitsPackage bp) private returns (bool) {

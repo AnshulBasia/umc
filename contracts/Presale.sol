@@ -22,13 +22,13 @@ contract Presale is Pausable, PullPayment {
 	* Constants
 	*/
 	/* Minimum number of UmbrellaCoin to sell */
-	uint public constant MIN_CAP = 3000000000000; // 3,000,000 UmbrellaCoins
+	uint public constant MIN_CAP = 0;
 	/* Maximum number of UmbrellaCoin to sell */
-	uint public constant MAX_CAP = 70000000000000; // 70,000,000 UmbrellaCoins
+	uint public constant MAX_CAP_ETHER = 5000 ether;
 	/* Minimum amount to invest */
 	uint public constant MIN_INVEST_ETHER = 100 finney;
 	/* Presale period */
-	uint private constant Presale_PERIOD = 30 days;
+	uint private constant PRESALE_PERIOD = 30 days;
 	/* Number of UmbrellaCoins per Ether */
 	uint public constant COIN_PER_ETHER = 600000000; // 600 UmbrellaCoins
 
@@ -96,7 +96,7 @@ contract Presale is Pausable, PullPayment {
 		if (startTime != 0) throw; // Presale was already started
 
 		startTime = now ;            
-		endTime =  now + Presale_PERIOD;    
+		endTime =  now + PRESALE_PERIOD;    
 	}
 
 	/*
@@ -106,7 +106,7 @@ contract Presale is Pausable, PullPayment {
 		if (msg.value < MIN_INVEST_ETHER) throw; // Don't accept funding under a predefined threshold
 		
 		uint coinToSend = bonus(msg.value.mul(COIN_PER_ETHER).div(1 ether)); // Compute the number of UmbrellaCoin to send
-		if (coinToSend.add(coinSentToEther) > MAX_CAP) throw;	
+		if (etherReceived > MAX_CAP_ETHER) throw;	
 
 		Backer backer = backers[beneficiary];
 		coin.transfer(beneficiary, coinToSend); // Transfer UmbrellaCoins right now 
@@ -127,8 +127,7 @@ contract Presale is Pausable, PullPayment {
 	 *Compute the UmbrellaCoin bonus according to the investment period
 	 */
 	function bonus(uint amount) internal constant returns (uint) {
-		if (now < startTime.add(2 days)) return amount.add(amount.div(3));   // bonus 33.3%
-		return amount;
+		return amount.add(amount.div(3));   // bonus 33.3%
 	}
 
 	/*	
@@ -136,14 +135,14 @@ contract Presale is Pausable, PullPayment {
 	*/
 	function finalize() onlyOwner public {
 
-		if (now < endTime) { // Cannot finalise before Presale_PERIOD or before selling all coins
-			if (coinSentToEther == MAX_CAP) {
+		if (now < endTime) { // Cannot finalise before PRESALE_PERIOD or before selling all coins
+			if (etherReceived == MAX_CAP_ETHER) {
 			} else {
 				throw;
 			}
 		}
 
-		if (coinSentToEther < MIN_CAP && now < endTime + 15 days) throw; // If MIN_CAP is not reached donors have 15days to get refund before we can finalise
+		if (etherReceived < MIN_CAP && now < endTime + 15 days) throw; // If MIN_CAP is not reached donors have 15days to get refund before we can finalise
 
 		if (!multisigEther.send(this.balance)) throw; // Move the remaining Ether to the multisig address
 		
@@ -174,50 +173,6 @@ contract Presale is Pausable, PullPayment {
 	 */
 	function backUmbrellaCoinOwner() onlyOwner public {
 		coin.transferOwnership(owner);
-	}
-
-	/**
-	 * Transfer remains to owner in case if impossible to do min invest
-	 */
-	function getRemainCoins() onlyOwner public {
-		var remains = MAX_CAP - coinSentToEther;
-		uint minCoinsToSell = bonus(MIN_INVEST_ETHER.mul(COIN_PER_ETHER) / (1 ether));
-
-		if(remains > minCoinsToSell) throw;
-
-		Backer backer = backers[owner];
-		coin.transfer(owner, remains); // Transfer UmbrellaCoins right now 
-
-		backer.coinSent = backer.coinSent.add(remains);
-
-		coinSentToEther = coinSentToEther.add(remains);
-
-		// Send events
-		LogCoinsEmited(this ,remains);
-		LogReceivedETH(owner, etherReceived); 
-	}
-
-
-	/* 
-  	 * When MIN_CAP is not reach:
-  	 * 1) backer call the "approve" function of the UmbrellaCoin token contract with the amount of all UmbrellaCoins they got in order to be refund
-  	 * 2) backer call the "refund" function of the Presale contract with the same amount of UmbrellaCoins
-   	 * 3) backer call the "withdrawPayments" function of the Presale contract to get a refund in ETH
-   	 */
-	function refund(uint _value) minCapNotReached public {
-		
-		if (_value != backers[msg.sender].coinSent) throw; // compare value from backer balance
-
-		coin.transferFrom(msg.sender, address(this), _value); // get the token back to the Presale contract
-
-		if (!coin.float(_value)) throw ; // token sent for refund are stored as float
-
-		uint ETHToSend = backers[msg.sender].weiReceived;
-		backers[msg.sender].weiReceived=0;
-
-		if (ETHToSend > 0) {
-			asyncSend(msg.sender, ETHToSend); // pull payment to get refund in ETH
-		}
 	}
 
 }
