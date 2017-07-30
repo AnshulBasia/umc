@@ -24,7 +24,7 @@ contract Presale is Pausable, PullPayment {
 	/* Minimum number of UmbrellaCoin to sell */
 	uint public constant MIN_CAP = 0;
 	/* Maximum number of UmbrellaCoin to sell */
-	uint public constant MAX_CAP_ETHER = 5000 ether;
+	uint public constant MAX_CAP_ETHER = 2000 ether;
 	/* Minimum amount to invest */
 	uint public constant MIN_INVEST_ETHER = 100 finney;
 	/* Presale period */
