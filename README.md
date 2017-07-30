@@ -16,6 +16,7 @@ To run test open the terminal and run the following commands:
 ```sh
 $ cd umc
 $ truffle migrate
+$ ./testrpc.sh
 $ truffle test ./test/MainFlow.js
 $ truffle test ./test/RefundFlow.js
 $ truffle test ./test/FastFlow.js
