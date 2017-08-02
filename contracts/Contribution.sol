@@ -45,11 +45,11 @@ contract Contribution is Pausable, PullPayment {
 	event LogCoinsEmited(address indexed from, uint amount);
 
 /*Helper Functions*/
-
+    
     /*Function to get current float*/
     function CurrentFloat() private returns (uint)
     {
-        throw; //TODO: need to get current float
+        revert(); //TODO: need to get current float
     }
 
 /*Function to convert finney to UmbrellaCoin*/
@@ -61,13 +61,13 @@ contract Contribution is Pausable, PullPayment {
 	/*
 	 * Constructor
 	*/
-    function Contribution(address _umbrellaCoinAddress, uint contributionAmount)
+    function Contribution(/*address _umbrellaCoinAddress,*/ uint contributionAmount)
     {
-        if (contributionAmount < MIN_CONTRIBUTE_ETHER) throw; // Don't accept too small of a policy
+        require (contributionAmount >= MIN_CONTRIBUTE_ETHER); // Don't accept too small of a policy
 
-        if (contributionAmount >= MAX_CONTRIBUTE_ETHER) throw; //Don't aceept too large a policy
+        require (contributionAmount <= MAX_CONTRIBUTE_ETHER); //Don't aceept too large a policy
 
-        if (contributionAmount > CurrentFloat().div(PERCENTAGE_OF_FLOAT)) throw; //Don't accept to large a policy
+        require (contributionAmount <= CurrentFloat().div(PERCENTAGE_OF_FLOAT)); //Don't accept to large a policy
 
         //TODO: Any other security checks here
 

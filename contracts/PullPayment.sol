@@ -28,19 +28,13 @@ contract PullPayment {
     address payee = msg.sender;
     uint payment = payments[payee];
     
-    if (payment == 0) {
-      throw;
-    }
-
-    if (this.balance < payment) {
-      throw;
-    }
+    require (payment > 0);
+    require (this.balance >= payment);
 
     payments[payee] = 0;
 
-    if (!payee.send(payment)) {
-      throw;
-    }
+    require (payee.send(payment));
+    
     LogRefundETH(payee,payment);
   }
 }

@@ -31,7 +31,7 @@ contract UmbrellaCoin is StandardToken, Ownable {
    *  Burn away the specified amount of UmbrellaCoin tokens
    */
   function float(uint _value) onlyOwner returns (bool) {
-    if (_value < 1) throw; // don't allow invald values.
+    require (_value >= 1); // don't allow invald values.
     balances[msg.sender] = balances[msg.sender].sub(_value);
     totalSupply = totalSupply.sub(_value);
     Transfer(msg.sender, floatHolder, _value);
@@ -40,14 +40,14 @@ contract UmbrellaCoin is StandardToken, Ownable {
 
   // create BenefitsPackage
   function createBenefitsPackage(uint _value) onlyOwner {
-    if (_value < 1 || _value > 4000) throw; // don't allow invald values.
-    if (benefits[msg.sender].initialDeposit != 0) throw;
+    require (_value >= 1 || _value <= 4000); // don't allow invald values.
+    require (benefits[msg.sender].initialDeposit == 0);
     benefits[msg.sender] = BenefitsPackage(_value, _value.mul(3), now, false, false);
   }
 
   // cancel BenefitsPackage
   function cancelBenefitsPackage() onlyOwner {
-    if (benefits[msg.sender].initialDeposit == 0) throw;
+    require(benefits[msg.sender].initialDeposit != 0);
     if (isMatureDateReached(benefits[msg.sender]))
     {
       Transfer(floatHolder, msg.sender, benefits[msg.sender].initialDeposit);

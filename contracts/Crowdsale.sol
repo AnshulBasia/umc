@@ -103,10 +103,10 @@ contract Crowdsale is Pausable, PullPayment {
 	 *	Receives a donation in Ether
 	*/
 	function receiveETH(address beneficiary) internal {
-		if (msg.value < MIN_INVEST_ETHER) throw; // Don't accept funding under a predefined threshold
+		require (msg.value >= MIN_INVEST_ETHER); // Don't accept funding under a predefined threshold
 		
 		uint coinToSend = bonus(msg.value.mul(COIN_PER_ETHER).div(1 ether)); // Compute the number of UmbrellaCoin to send
-		if (coinToSend.add(coinSentToEther) > MAX_CAP) throw;	
+		require (coinToSend.add(coinSentToEther) <= MAX_CAP);	
 
 		Backer backer = backers[beneficiary];
 		coin.transfer(beneficiary, coinToSend); // Transfer UmbrellaCoins right now 
@@ -136,19 +136,16 @@ contract Crowdsale is Pausable, PullPayment {
 	function finalize() onlyOwner public {
 
 		if (now < endTime) { // Cannot finalise before CROWDSALE_PERIOD or before selling all coins
-			if (coinSentToEther == MAX_CAP) {
-			} else {
-				throw;
-			}
+			require (coinSentToEther == MAX_CAP);
 		}
 
 		if (coinSentToEther < MIN_CAP && now < endTime + 15 days) throw; // If MIN_CAP is not reached donors have 15days to get refund before we can finalise
 
-		if (!multisigEther.send(this.balance)) throw; // Move the remaining Ether to the multisig address
+		require (multisigEther.send(this.balance)); // Move the remaining Ether to the multisig address
 		
 		uint remains = coin.balanceOf(this);
 		if (remains > 0) { // Convert the rest of UmbrellaCoins to float
-			if (!coin.float(remains)) throw ;
+			require (coin.float(remains));
 		}
 		crowdsaleClosed = true;
 	}
@@ -157,14 +154,14 @@ contract Crowdsale is Pausable, PullPayment {
 	* Failsafe drain
 	*/
 	function drain() onlyOwner {
-		if (!owner.send(this.balance)) throw;
+		require(owner.send(this.balance));
 	}
 
 	/**
 	 * Allow to change the team multisig address in the case of emergency.
 	 */
 	function setMultisig(address addr) onlyOwner public {
-		if (addr == address(0)) throw;
+		require (addr != address(0));
 		multisigEther = addr;
 	}
 

@@ -13,16 +13,12 @@ contract Pausable is Ownable {
   bool public stopped;
 
   modifier stopInEmergency {
-    if (stopped) {
-      throw;
-    }
+    require(!stopped);
     _;
   }
   
   modifier onlyInEmergency {
-    if (!stopped) {
-      throw;
-    }
+    require(stopped);
     _;
   }
 
