@@ -22,7 +22,7 @@ contract Presale is Pausable, PullPayment {
 	* Constants
 	*/
 	/* Minimum number of UmbrellaCoin to sell */
-	uint public constant MIN_CAP = 0;
+	uint public constant MIN_CAP = 100;
 	/* Maximum number of UmbrellaCoin to sell */
 	uint public constant MAX_CAP_ETHER = 2000 ether;
 	/* Minimum amount to invest */
@@ -136,7 +136,7 @@ contract Presale is Pausable, PullPayment {
 	function finalize() onlyOwner public {
 
 		if (now < endTime) { // Cannot finalise before PRESALE_PERIOD or before selling all coins
-			if (etherReceived == MAX_CAP_ETHER) {
+			if (etherReceived >= MAX_CAP_ETHER) {
 			} else {
 				throw;
 			}
