@@ -1,7 +1,7 @@
 var SafeMath = artifacts.require("./SafeMath.sol");
 var UmbrellaCoin = artifacts.require("./UmbrellaCoin.sol");
 var Crowdsale = artifacts.require("./Crowdsale.sol");
-
+var Presale = artifacts.require("./Presale.sol");
 
 module.exports = function(deployer) {
 
@@ -25,6 +25,17 @@ module.exports = function(deployer) {
 					console.log("UmbrellaCoin owner : " + owner);
 					return coin.transferOwnership(Crowdsale.address, {from: owner}).then(function(txn) {
 						console.log("UmbrellaCoin owner was changed: " + Crowdsale.address);		
+					});
+				})
+			});
+		});
+		return deployer.deploy(Presale, UmbrellaCoin.address, wallet, { from: owner }).then(function() {
+			console.log("Presale address: " + Presale.address);
+			return UmbrellaCoin.deployed().then(function(coin) {
+				return coin.owner.call().then(function(owner) {
+					console.log("UmbrellaCoin owner : " + owner);
+					return coin.transferOwnership(Presale.address, {from: owner}).then(function(txn) {
+						console.log("UmbrellaCoin owner was changed: " + Presale.address);		
 					});
 				})
 			});
