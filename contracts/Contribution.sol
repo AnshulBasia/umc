@@ -1,8 +1,5 @@
 pragma solidity ^0.4.2;
 
-
-import "./Pausable.sol";
-import "./PullPayment.sol";
 import "./UmbrellaCoin.sol";
 
 /*
@@ -10,7 +7,9 @@ import "./UmbrellaCoin.sol";
   This smart contract collects ETH, and in return emits UmbrellaCoin tokens to the backers
 */
 
-contract Contribution is Pausable, PullPayment {
+contract Contribution {
+
+    enum PackageState {Active, Canceled}
     
     using SafeMath for uint;
 
@@ -32,10 +31,22 @@ contract Contribution is Pausable, PullPayment {
     /* Percentage of total float acsessable for Contribution*/
     uint private constant PERCENTAGE_OF_FLOAT = 100; //1%
 
+    /* Amount already used by the customer for the package */
+    uint private totalAmountUsedTillDate;
+
+    /* Amount paid by the customer to us till date or worth of policy*/
+
+    uint private totalContributedAmount;
+
+    PackageState private isActive;
+
+    /* The address of the policy owner */
+    address private _umbrellaCoinAddress;
+
 	/*
 	* Variables
 	*/
-	/* Map a starttime to an Umnbrella coin amount */
+	/* Map a starttime to an Umbrella coin amount */
 	mapping(uint => uint) private contributionHistory;
 
 	/*
@@ -61,7 +72,7 @@ contract Contribution is Pausable, PullPayment {
 	/*
 	 * Constructor
 	*/
-    function Contribution(/*address _umbrellaCoinAddress,*/ uint contributionAmount)
+    function Contribution(address creatorAddress, uint contributionAmount)
     {
         require (contributionAmount >= MIN_CONTRIBUTE_ETHER); // Don't accept too small of a policy
 
@@ -71,7 +82,28 @@ contract Contribution is Pausable, PullPayment {
 
         //TODO: Any other security checks here
 
+        _umbrellaCoinAddress = creatorAddress;
+
         contributionHistory[now] = FinneyToUmbrella(contributionAmount);
     }
 
+    function MaxPayable() public returns (uint)
+    {
+        return MAX_PAYOUT.mul(totalContributedAmount).sub(totalAmountUsedTillDate);
+    }
+
+    function IsActivePackage() public returns (bool)
+    {
+        return isActive == PackageState.Active;
+    }
+
+    function ChangeTotalAmountUsedTillDate(uint claimAmount) public returns (uint)
+    {
+        totalAmountUsedTillDate = claimAmount + totalAmountUsedTillDate;
+    }
+
+    function GetAddress() public returns (address)
+    {
+        return _umbrellaCoinAddress;
+    }
 }
