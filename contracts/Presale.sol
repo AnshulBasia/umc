@@ -21,24 +21,30 @@ contract Presale is Pausable, PullPayment {
 	/*
 	* Constants
 	*/
+	/* Minimum number of UmbrellaCoin to sell */
+	uint public constant MIN_CAP = 3000000000000; // 3,000,000 UmbrellaCoins
+	/* Maximum number of UmbrellaCoin to sell */
+	uint public constant MAX_CAP = 70000000000000; // 70,000,000 UmbrellaCoins
 	/* Number of UmbrellaCoins per Ether */
 	uint public constant COIN_PER_ETHER = 600000000; // 600 UmbrellaCoins
-	/* Minimum number of UmbrellaCoin to sell */
-	uint public constant MIN_CAP = 100 ether;
-	/* Maximum number of UmbrellaCoin to sell */
-	uint public constant MAX_CAP_ETHER = 2000 ether;
 	/* Minimum amount to invest */
 	uint public constant MIN_INVEST_ETHER = 100 finney;
+	/* Maximum amount to invest */
+	uint public constant MAX_INVEST_ETHER = 3000 ether;
 
 	/*Presale*/
-	/* Maximum number of UmbrellaCoin to sell for Presale */
+	/* Maximum number of ether to raise for Presale */
 	uint public constant MAX_CAP_ETHER_PRESALE = 1000 ether;
+	/* Minimum number of ether to raise for Presale */
+	uint public constant MIN_CAP_ETHER_PRESALE = 100 ether;
 	/* Presale period */
 	uint private constant PRESALE_PERIOD = 30 days;
 
 	/*Crowdsale*/
-	/* Maximum number of UmbrellaCoin to sell for Presale */
+	/* Maximum number of ether to raise for Crowdsale */
 	uint public constant MAX_CAP_ETHER_CROWDSALE = 100000 ether;
+	/* Minimum number of ether to raise for Crowdsale */
+	uint public constant MIN_CAP_ETHER_CROWDSALE = 2000 ether;
 	/* CrowdSale period */
 	uint private constant CROWDSALE_PERIOD = 30 days;
 
@@ -120,7 +126,7 @@ contract Presale is Pausable, PullPayment {
 		
 		uint coinToSend = bonus(msg.value.mul(COIN_PER_ETHER).div(1 ether)); // Compute the number of UmbrellaCoin to send
 		
-		require(etherReceived <= MAX_CAP_ETHER);
+		require(etherReceived <= MAX_CAP_ETHER_CROWDSALE);
 
 		Backer storage backer = backers[beneficiary];
 		coin.transfer(beneficiary, coinToSend); // Transfer UmbrellaCoins right now 
@@ -145,7 +151,7 @@ contract Presale is Pausable, PullPayment {
 		require(now < endTime);
 		require(!PresaleClosed && !CrowdSaleClosed);
 		if(!PresaleClosed)
-			return amount.add(amount.div(3));   // bonus 33.3%
+			return amount.mul(2);   // bonus 100%
 		else
 			return amount;   // No bonus if you are beyond the presale
 	}
@@ -155,11 +161,9 @@ contract Presale is Pausable, PullPayment {
 	*/
 	function finalizeCrowdSale() onlyOwner public {
 
-		if (now < endTime) { // Cannot finalise before PRESALE_PERIOD or before selling all coins
-			require(etherReceived >= MAX_CAP_ETHER_CROWDSALE);
-		}
+		require (now > endTime || etherReceived >= MAX_CAP_ETHER_CROWDSALE);
 
-		if (etherReceived < MIN_CAP && now < endTime + 15 days) revert(); // If MIN_CAP is not reached donors have 15days to get refund before we can finalise
+		if (etherReceived < MIN_CAP_ETHER_CROWDSALE && now < endTime + 15 days) revert(); // If MIN_CAP is not reached donors have 15days to get refund before we can finalise
 
 		require(multisigEther.send(this.balance)); // Move the remaining Ether to the multisig address
 		
@@ -175,16 +179,10 @@ contract Presale is Pausable, PullPayment {
 	*/
 	function finalizePresale() onlyOwner public {
 
-		if (now < endTime) { // Cannot finalise before PRESALE_PERIOD or before selling all coins
-			require(etherReceived >= MAX_CAP_ETHER_PRESALE);
-		}
+		require (now > startTime + PRESALE_PERIOD || etherReceived >= MAX_CAP_ETHER_PRESALE);
 
 		require(multisigEther.send(this.balance)); // Move the remaining Ether to the multisig address
-		
-		uint remains = coin.balanceOf(this);
-		if (remains > 0) { // Convert the rest of UmbrellaCoins to float
-			require (coin.float(remains)) ;
-		}
+
 		PresaleClosed = true;
 	}
 
@@ -209,5 +207,48 @@ contract Presale is Pausable, PullPayment {
 	function backUmbrellaCoinOwner() onlyOwner public {
 		coin.transferOwnership(owner);
 	}
+
+	/**
+	 * Transfer remains to owner in case if impossible to do min invest
+	 */
+	function getRemainCoins() onlyOwner public {
+		var remains = MAX_CAP - coinSentToEther;
+
+		require(remains > MIN_CAP);
+
+		Backer backer = backers[owner];
+		coin.transfer(owner, remains); // Transfer UmbrellaCoins right now 
+
+		backer.coinSent = backer.coinSent.add(remains);
+
+		coinSentToEther = coinSentToEther.add(remains);
+
+		// Send events
+		LogCoinsEmited(this ,remains);
+		LogReceivedETH(owner, etherReceived); 
+	}
+
+
+	/* 
+  	 * When MIN_CAP is not reach:
+  	 * 1) backer call the "approve" function of the UmbrellaCoin token contract with the amount of all UmbrellaCoins they got in order to be refund
+  	 * 2) backer call the "refund" function of the Crowdsale contract with the same amount of UmbrellaCoins
+   	 * 3) backer call the "withdrawPayments" function of the Crowdsale contract to get a refund in ETH
+   	 */
+	function refund(uint _value) minCapNotReached public {
+		
+		if (_value != backers[msg.sender].coinSent) throw; // compare value from backer balance
+
+		coin.transferFrom(msg.sender, address(this), _value); // get the token back to the crowdsale contract
+
+		if (!coin.float(_value)) throw ; // token sent for refund are stored as float
+
+		uint ETHToSend = backers[msg.sender].weiReceived;
+		backers[msg.sender].weiReceived=0;
+
+		if (ETHToSend > 0) {
+			asyncSend(msg.sender, ETHToSend); // pull payment to get refund in ETH
+		}
+}
 
 }
