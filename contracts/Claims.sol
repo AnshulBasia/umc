@@ -13,6 +13,7 @@ contract Claims {
     
     using SafeMath for uint;
 
+    enum State {Active, Paid, Rejected}
 	/*
 	* Constants
 	*/
@@ -25,6 +26,9 @@ contract Claims {
 
 /* Date on which claim was filed */
     uint private createdDate;
+
+/* Processing state of the claim */
+    uint private claimState;
 
 	/*
 	* Variables
@@ -47,10 +51,13 @@ contract Claims {
         coin = UmbrellaCoin(associatedBenefitsPackage.GetAddress());
         coin.transfer(associatedBenefitsPackage.GetAddress(), claimAsk); // Transfer UmbrellaCoins right now
 
+        /* Change the state to paid out */
+        claimState = State.Paid;
+        
         /* Adjust the remaining amount they can use towards future claims*/
         associatedBenefitsPackage.ChangeTotalAmountUsedTillDate(claimAsk);
     }
-    
+
 	/*
 	 * Constructor
 	*/
