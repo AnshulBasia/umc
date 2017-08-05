@@ -67,6 +67,7 @@ contract Contribution is Pausable, PullPayment {
 
         require (contributionAmount <= MAX_CONTRIBUTE_ETHER); //Don't aceept too large a policy
 
+        //Move this check to the database
         require (contributionAmount <= CurrentFloat().div(PERCENTAGE_OF_FLOAT)); //Don't accept to large a policy
 
         //TODO: Any other security checks here
