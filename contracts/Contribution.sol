@@ -113,4 +113,25 @@ contract Contribution {
     {
         return _umbrellaCoinAddress;
     }
+
+    /* Withdraw or terminate the claim */
+
+    function WithdrawContribution() public
+    {
+        /* Returning the money to the user with deducting the amount used and penalty */
+        UmbrellaCoin coin;
+        coin = UmbrellaCoin(_umbrellaCoinAddress);
+        coin.transfer(_umbrellaCoinAddress, RefundableUMC()); // Transfer UmbrellaCoins right now
+
+        /* Cancel the state of the policy */
+        isActive = PackageState.Canceled;
+    }
+
+    /* The amount of UMC we will refund the policy owner on termination*/
+    function RefundableUMC() private returns (uint)
+    {
+        if (totalAmountUsedTillDate > totalContributedAmount)
+            return 0;
+        return (totalContributedAmount.sub(totalAmountUsedTillDate)).div(2);
+    }
 }
