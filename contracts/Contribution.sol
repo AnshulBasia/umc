@@ -38,6 +38,8 @@ contract Contribution {
 
     uint private totalContributedAmount;
 
+    /* Signals whether the package is still active */
+
     PackageState private isActive;
 
     /* The address of the policy owner */
@@ -88,21 +90,25 @@ contract Contribution {
         contributionHistory[now] = FinneyToUmbrella(contributionAmount);
     }
 
+    /* At any given time, this is the maximum amount the policy owner is eligible for */
     function MaxPayable() public returns (uint)
     {
         return MAX_PAYOUT.mul(totalContributedAmount).sub(totalAmountUsedTillDate);
     }
 
+    /* Getter for obtaining whether the policy is active*/
     function IsActivePackage() public returns (bool)
     {
         return isActive == PackageState.Active;
     }
 
+    /* Setter for changing the total used amount*/
     function ChangeTotalAmountUsedTillDate(uint claimAmount) public returns (uint)
     {
         totalAmountUsedTillDate = claimAmount + totalAmountUsedTillDate;
     }
 
+    /*Getter for address of poliyc owner*/
     function GetAddress() public returns (address)
     {
         return _umbrellaCoinAddress;
