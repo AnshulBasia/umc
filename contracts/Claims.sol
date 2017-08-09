@@ -27,7 +27,7 @@ contract Claims {
 /* Date on which claim was filed */
     uint private createdDate;
 
-/* Processing state of the claim */
+/* Processing status of the claim */
     uint private claimState;
 
 	/*
@@ -43,7 +43,7 @@ contract Claims {
 
 /*Helper Functions*/
     
-  
+  /* Actually paying out the creator of the claim */
     function PayoutClaim() public
     {
         /* Payout the amount */
@@ -53,9 +53,16 @@ contract Claims {
 
         /* Change the state to paid out */
         claimState = State.Paid;
-        
+
         /* Adjust the remaining amount they can use towards future claims*/
         associatedBenefitsPackage.ChangeTotalAmountUsedTillDate(claimAsk);
+    }
+
+
+    /* Actions after a claim gets rejected */
+    function RejectClaim() public
+    {
+        claimState = State.Rejected;
     }
 
 	/*
@@ -72,6 +79,8 @@ contract Claims {
         claimAsk = askAmount;
 
         createdDate = now;
+
+        claimState = State.Active;
     }
 
 }
