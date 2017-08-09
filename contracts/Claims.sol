@@ -74,6 +74,8 @@ contract Claims {
 
         require (package.IsActivePackage()); // Only process claims for active accounts
 
+        require (now > package.CreatedDate()); // we want to ensure we're past the cooling period -- how to write 3 months?
+
         associatedBenefitsPackage = package;
 
         claimAsk = askAmount;

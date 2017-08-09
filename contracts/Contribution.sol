@@ -45,6 +45,9 @@ contract Contribution {
     /* The address of the policy owner */
     address private _umbrellaCoinAddress;
 
+    /* The created time for the policy */
+     uint private createdDate;
+
 	/*
 	* Variables
 	*/
@@ -85,7 +88,11 @@ contract Contribution {
 
         //TODO: Any other security checks here
 
+        totalContributedAmount = totalContributedAmount + contributionAmount;
+
         _umbrellaCoinAddress = creatorAddress;
+
+        createdDate = now;
 
         contributionHistory[now] = FinneyToUmbrella(contributionAmount);
     }
@@ -102,6 +109,13 @@ contract Contribution {
         return isActive == PackageState.Active;
     }
 
+    /* Getter for the date on which policy was created */
+
+    function CreatedDate() public returns (uint)
+    {
+        return createdDate;
+    }
+    
     /* Setter for changing the total used amount*/
     function ChangeTotalAmountUsedTillDate(uint claimAmount) public returns (uint)
     {
