@@ -28,7 +28,7 @@ contract Claims {
     uint private createdDate;
 
 /* Processing status of the claim */
-    uint private claimState;
+    enum private claimState;
 
 	/*
 	* Variables
