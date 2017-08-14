@@ -20,6 +20,16 @@ contract UmbrellaCoin is StandardToken, Ownable {
       floatHolder = msg.sender;
   }
 
+  /**
+  *  Burn away the specified amount of UmbrellaCoin tokens
+  */
+  function burn(uint _value) onlyOwner returns (bool) {
+    balances[msg.sender] = balances[msg.sender].sub(_value);
+    totalSupply = totalSupply.sub(_value);
+    Transfer(msg.sender, 0x0, _value);
+    return true;
+  }
+
 }
 
 

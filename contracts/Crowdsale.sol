@@ -165,6 +165,11 @@ contract Crowdsale is Pausable, PullPayment {
 		if (etherReceived < MIN_CAP_ETHER_CROWDSALE && now < endTime + 15 days) revert(); // If MIN_CAP is not reached donors have 15days to get refund before we can finalise
 
 		require(multisigEther.send(this.balance)); // Move the remaining Ether to the multisig address
+
+		uint remains = coin.balanceOf(this);
+ 		if (remains > 0) { // Burn the rest of UmbrellaCoins
+ 			if (!coin.burn(remains)) throw ;
+ 		}
 		
 		CrowdSaleClosed = true;
 	}
@@ -223,6 +228,8 @@ contract Crowdsale is Pausable, PullPayment {
 		if (_value != backers[msg.sender].coinSent) throw; // compare value from backer balance
 
 		coin.transferFrom(msg.sender, address(this), _value); // get the token back to the crowdsale contract
+
+		if (!coin.burn(_value)) throw ; // token sent for refund are burnt
 
 		uint ETHToSend = backers[msg.sender].weiReceived;
 		backers[msg.sender].weiReceived=0;
