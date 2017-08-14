@@ -28,7 +28,7 @@ contract Claims {
     uint private createdDate;
 
 /* Processing status of the claim */
-    enum private claimState;
+    State private claimState;
 
 	/*
 	* Variables
@@ -74,7 +74,7 @@ contract Claims {
 
         require (package.IsActivePackage()); // Only process claims for active accounts
 
-        require (now > package.CreatedDate()); // we want to ensure we're past the cooling period -- how to write 3 months?
+        require (now > package.CreatedDate() + 90 days); // we want to ensure we're past the cooling period -- how to write 3 months?
 
         associatedBenefitsPackage = package;
 
