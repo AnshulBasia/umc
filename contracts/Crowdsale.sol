@@ -26,7 +26,7 @@ contract Crowdsale is Pausable, PullPayment {
 	/* Maximum number of UmbrellaCoin to sell */
 	uint public constant MAX_CAP = 70000000000000; // 70,000,000 UmbrellaCoins
 	/* Number of UmbrellaCoins per Ether */
-	uint public constant COIN_PER_ETHER = 600000000; // 600 UmbrellaCoins
+	uint public constant price = 1666 szabo;
 	/* Minimum amount to invest */
 	uint public constant MIN_INVEST_ETHER = 100 finney;
 	/* Maximum amount to invest */
@@ -44,7 +44,7 @@ contract Crowdsale is Pausable, PullPayment {
 	/* Maximum number of ether to raise for Crowdsale */
 	uint public constant MAX_CAP_ETHER_CROWDSALE = 100000 ether;
 	/* Minimum number of ether to raise for Crowdsale */
-	uint public constant MIN_CAP_ETHER_CROWDSALE = 2000 ether;
+	uint public constant MIN_CAP_ETHER_CROWDSALE = 5000 ether;
 	/* CrowdSale period */
 	uint private constant CROWDSALE_PERIOD = 30 days;
 
@@ -121,9 +121,9 @@ contract Crowdsale is Pausable, PullPayment {
 	 *	Receives a donation in Ether
 	*/
 	function receiveETH(address beneficiary) internal {
-		require(msg.value >= MIN_INVEST_ETHER); // Don't accept funding under a predefined threshold
+		 if (msg.value < MIN_INVEST_ETHER || msg.value > MAX_INVEST_ETHER) revert();
 		
-		uint coinToSend = bonus(msg.value.mul(COIN_PER_ETHER).div(1 ether)); // Compute the number of UmbrellaCoin to send
+		uint coinToSend = bonus(msg.value.div(price).mul(1000000)); // Compute the number of UmbrellaCoin to send
 		
 		require(etherReceived <= MAX_CAP_ETHER_CROWDSALE);
 
