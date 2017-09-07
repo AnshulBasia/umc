@@ -44,7 +44,7 @@ contract Crowdsale is Pausable, PullPayment {
 	/* Maximum number of ether to raise for Crowdsale */
 	uint public constant MAX_CAP_ETHER_CROWDSALE = 100000 ether;
 	/* Minimum number of ether to raise for Crowdsale */
-	uint public constant MIN_CAP_ETHER_CROWDSALE = 5000 ether;
+	uint public constant MIN_CAP_ETHER_CROWDSALE = 1500 ether;
 	/* CrowdSale period */
 	uint private constant CROWDSALE_PERIOD = 30 days;
 
